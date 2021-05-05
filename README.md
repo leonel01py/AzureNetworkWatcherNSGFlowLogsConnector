@@ -1,7 +1,7 @@
 This project installs into an Azure Function in your Azure subscription. Its job is to read NSG Flow Logs from your configured storage account, break the data into chunks that are the right size for your log analytics system to ingest, then transmit the chunks to that system. At present, you may choose from four output bindings: ArcSight, LogStash, Splunk HEC, Event Hub.  
 
 
-[![Deploy to Azure](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fsebastus%2FAzureFunctionDeployment%2FNwNSGFlowLogs%2FazureDeploy.json)
+[![Deploy to Azure](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FPaloAltoNetworks%2FAzureNetworkWatcherNSGFlowLogsConnector%2Fmaster%2FNwNsgProject%2Fdeploy.json)
 
 
 NOTE regarding the Event Hub output binding:  
@@ -34,29 +34,8 @@ In the Application Settings of your Azure Function:
    Example: ```master```  
 * nsgSourceDataConnection     - a storage account connection string  
    Example: ```DefaultEndpointsProtocol=https;AccountName=yyy;AccountKey=xxx;EndpointSuffix=core.windows.net```  
-* cefLogAccount               - a storage account connection string - account into which trace logs of incoming json and outgoing cef are dropped  
-   Example: ```DefaultEndpointsProtocol=https;AccountName=yyy;AccountKey=xxx;EndpointSuffix=core.windows.net```  
-* outputBinding               - Points to the destination service - the service that will receive the NSG flow log data. Options are "arcsight", "splunk", "eventhub", "logstash".  
-   Example: ```arcsight```  
-* arcsightAddress             - internet address of the ArcSight server / service  
-   Example: ```192.168.1.1```  
-* arcsightPort                - TCP port to connect to on destination server / service  
-   Example: ```1514```
-* splunkAddress               - internet address of the Splunk HEC port.  
-   Example: ```http://mysplunkbox.uksouth.cloudapp.azure.com:8088/services/collector```  
-* splunkToken                 - guid security token for Splunk HEC  
-   Example: ```a77fdc21-0861-4d8b-941c-e1b4c556b4fb```
-* eventHubConnection          - connection string for your event hub namespace  
-   Example: ```Endpoint=sb://my.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=key```
-* eventHubName                - name of your event hub within the hub namespace  
-   Example: ```insights-logs-nsgflowlogs```  
-* logstashAddress             - network address of LogStash input endpoint  
-   Example: ```http://myelasticbox.uksouth.cloudapp.azure.com/```  
-* logstashHttpUser            - userid for LogStash http input  
-   Example: ```greg```  
-* logstashHttpPwd             - password for LogStash http input  
-   Example: ```P@ssw0rd!```  
-
+* xdrHost - XDR HTTP collector endpoint
+* xdrToken - XDR HTTP collector token
 
 # Contributing
 
