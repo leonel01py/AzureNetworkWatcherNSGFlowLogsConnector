@@ -38,13 +38,6 @@ namespace nsgFunc
                 throw new System.ArgumentNullException("blobContainerName", "Please provide setting.");
             }
 
-            string outputBinding = Util.GetEnvironmentVariable("outputBinding");
-            if (outputBinding.Length == 0)
-            {
-                log.LogError("Value for outputBinding is required. Permitted values are: 'arcsight', 'splunk', 'eventhub'.");
-                throw new System.ArgumentNullException("outputBinding", "Please provide setting.");
-            }
-
             var blobDetails = new BlobDetails(subId, resourceGroup, nsgName, blobYear, blobMonth, blobDay, blobHour, blobMinute, mac);
 
             // get checkpoint
@@ -105,7 +98,7 @@ namespace nsgFunc
             try
             {
                 int bytesSent = await Util.SendMessagesDownstreamAsync(nsgMessagesString, executionContext, cefLogBinder, log);
-                log.LogInformation($"Sending {nsgMessagesString.Length} bytes (denormalized to {bytesSent} bytes) downstream via output binding {outputBinding}.");
+                log.LogInformation($"Sending {nsgMessagesString.Length} bytes (denormalized to {bytesSent} bytes) downstream to XDR.");
             }
             catch (Exception ex)
             {

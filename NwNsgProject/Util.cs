@@ -41,12 +41,6 @@ namespace nsgFunc
             //  ...
             // ,{...}
             //
-            string outputBinding = Util.GetEnvironmentVariable("outputBinding");
-            if (outputBinding.Length == 0)
-            {
-                log.LogError("Value for outputBinding is required. Permitted values are: 'arcsight', 'splunk', 'eventhub'.");
-                return 0;
-            }
 
             // skip past the leading comma
             //string trimmedMessages = nsgMessagesString.Trim();
@@ -89,21 +83,7 @@ namespace nsgFunc
             }
 
             int bytesSent = 0;
-            switch (outputBinding)
-            {
-                //case "logstash":
-                //    await Util.obLogstash(newClientContent, log);
-                //    break;
-                case "arcsight":
-                    bytesSent = await Util.obArcsightNew(newClientContent, executionContext, cefLogBinder, log);
-                    break;
-                case "splunk":
-                    bytesSent = await Util.obSplunk(newClientContent, log);
-                    break;
-                case "eventhub":
-                    bytesSent = await Util.obEventHub(newClientContent, log);
-                    break;
-            }
+            bytesSent = await Util.obXDR(newClientContent, log);
             return bytesSent;
         }
 
@@ -150,6 +130,12 @@ namespace nsgFunc
                 return response;
             }
 
+            public static async Task<HttpResponseMessage> SendToXDR(HttpRequestMessage req)
+            {
+                HttpResponseMessage response = await HttpClient.SendAsync(req);
+                return response;
+            }
+
         }
 
         static IEnumerable<List<DenormalizedRecord>> denormalizedRecords(string newClientContent, Binder errorRecordBinder, ILogger log)
@@ -186,28 +172,7 @@ namespace nsgFunc
 
                                 var sizeOfDenormalizedRecord = denormalizedRecord.GetSizeOfJSONObject(); 
 
-                                //for Event hub binding fork  -- start
-                                // Event hub basic message size is 256KB and the 'if' statement below ensures that list does not exceed size this size for Eventhub
-
-                                string outputBinding = Util.GetEnvironmentVariable("outputBinding");
-
-                                if (outputBinding == "eventhub")
-                                {
-                                    if (sizeOfListItems > 120) // this will chunk below 256KB : this is ideal sample message size. Feel free to go maximum till 150 : smaller values will create lot of outbound connections.
-                                    {
-                                        yield return outgoingList;
-                                        outgoingList.Clear();
-                                        sizeOfListItems = 0;
-                                    }
-                                    outgoingList.Add(denormalizedRecord);
-                                    sizeOfListItems += 1;
-
-                                }
-
-                                //for Event hub binding fork  -- end
-                                //other output bindings
-
-                                else if (sizeOfListItems + sizeOfDenormalizedRecord > MAXTRANSMISSIONSIZE + 20)
+                                if (sizeOfListItems + sizeOfDenormalizedRecord > MAXTRANSMISSIONSIZE + 20)
                                 {
                                     yield return outgoingList;
                                     outgoingList.Clear();
