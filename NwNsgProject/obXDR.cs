@@ -1,12 +1,9 @@
-﻿using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Formatting;
@@ -15,7 +12,7 @@ namespace nsgFunc
 {
     public partial class Util
     {
-        public static async Task<int> obSplunk(string newClientContent, ILogger log)
+        public static async Task<int> obXDR(string newClientContent, ILogger log)
         {
             //
             // newClientContent looks like this:
@@ -29,53 +26,54 @@ namespace nsgFunc
             // }
             //
 
-            string splunkAddress = Util.GetEnvironmentVariable("splunkAddress");
-            string splunkToken = Util.GetEnvironmentVariable("splunkToken");
+            string xdrHost = Util.GetEnvironmentVariable("xdrHost");
+            string xdrToken = Util.GetEnvironmentVariable("xdrToken");
 
-            if (splunkAddress.Length == 0 || splunkToken.Length == 0)
+            if (xdrHost.Length == 0 || xdrToken.Length == 0)
             {
-                log.LogError("Values for splunkAddress and splunkToken are required.");
+                log.LogError("Invalid xdrHost and xdrToken are required.");
                 return 0;
             }
 
             ServicePointManager.Expect100Continue = true;
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-            ServicePointManager.ServerCertificateValidationCallback += new RemoteCertificateValidationCallback(ValidateMyCert);
+            ServicePointManager.ServerCertificateValidationCallback = new System.Net.Security.RemoteCertificateValidationCallback(delegate { return true; });
 
             int bytesSent = 0;
 
-            foreach (var transmission in convertToSplunkList(newClientContent, log))
+            foreach (var transmission in convertToXDRList(newClientContent, log))
             {
                 var client = new SingleHttpClientInstance();
                 try
                 {
-                    HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Post, splunkAddress);
+                    HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Post, xdrHost);
                     req.Headers.Accept.Clear();
                     req.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                    req.Headers.Add("Authorization", "Splunk " + splunkToken);
+                    req.Headers.Add("Authorization", $"Bearer {xdrToken}");
                     req.Content = new StringContent(transmission, Encoding.UTF8, "application/json");
-                    HttpResponseMessage response = await SingleHttpClientInstance.SendToSplunk(req);
+                    HttpResponseMessage response = await SingleHttpClientInstance.SendToXDR(req);
                     if (response.StatusCode != HttpStatusCode.OK)
                     {
-                        throw new System.Net.Http.HttpRequestException($"StatusCode from Splunk: {response.StatusCode}, and reason: {response.ReasonPhrase}");
+                        throw new System.Net.Http.HttpRequestException($"Non HTTP 200 status code received from XDR: {response.StatusCode}, and reason: {response.ReasonPhrase}");
                     }
                 }
                 catch (System.Net.Http.HttpRequestException e)
                 {
-                    throw new System.Net.Http.HttpRequestException("Sending to Splunk. Is Splunk service running?", e);
+                    throw new System.Net.Http.HttpRequestException("Failed sending data to XDR", e);
                 }
                 catch (Exception f)
                 {
-                    throw new System.Exception("Sending to Splunk. Unplanned exception.", f);
+                    throw new System.Exception("Failed sending data to XDR.", f);
                 }
                 bytesSent += transmission.Length;
             }
+
             return bytesSent;
         }
 
-        static System.Collections.Generic.IEnumerable<string> convertToSplunkList(string newClientContent, ILogger log)
+        static System.Collections.Generic.IEnumerable<string> convertToXDRList(string newClientContent, ILogger log)
         {
-            foreach (var messageList in denormalizedSplunkEvents(newClientContent, null, log))
+            foreach (var messageList in denormalizedRecords(newClientContent, null, log))
             {
 
                 StringBuilder outgoingJson = StringBuilderPool.Allocate();
@@ -89,7 +87,7 @@ namespace nsgFunc
                         {
                             NullValueHandling = NullValueHandling.Ignore
                         });
-                        outgoingJson.Append(messageAsString);
+                        outgoingJson.AppendLine(messageAsString);
                     }
                     yield return outgoingJson.ToString();
                 }
@@ -99,22 +97,6 @@ namespace nsgFunc
                 }
 
             }
-        }
-
-        public static bool ValidateMyCert(object sender, X509Certificate cert, X509Chain chain, SslPolicyErrors sslErr)
-        {
-            var splunkCertThumbprint = Util.GetEnvironmentVariable("splunkCertThumbprint");
-
-            // if user has not configured a cert, anything goes
-            if (splunkCertThumbprint == "")
-                return true;
-
-            // if user has configured a cert, must match
-            var thumbprint = cert.GetCertHashString();
-            if (thumbprint == splunkCertThumbprint)
-                return true;
-
-            return false;
         }
     }
 }

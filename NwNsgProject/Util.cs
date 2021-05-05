@@ -91,17 +91,11 @@ namespace nsgFunc
             int bytesSent = 0;
             switch (outputBinding)
             {
-                //case "logstash":
-                //    await Util.obLogstash(newClientContent, log);
-                //    break;
-                case "arcsight":
-                    bytesSent = await Util.obArcsightNew(newClientContent, executionContext, cefLogBinder, log);
-                    break;
-                case "splunk":
-                    bytesSent = await Util.obSplunk(newClientContent, log);
-                    break;
                 case "eventhub":
                     bytesSent = await Util.obEventHub(newClientContent, log);
+                    break;
+                case "xdr":
+                    bytesSent = await Util.obXDR(newClientContent, log);
                     break;
             }
             return bytesSent;
@@ -145,6 +139,12 @@ namespace nsgFunc
             }
 
             public static async Task<HttpResponseMessage> SendToSplunk(HttpRequestMessage req)
+            {
+                HttpResponseMessage response = await HttpClient.SendAsync(req);
+                return response;
+            }
+
+            public static async Task<HttpResponseMessage> SendToXDR(HttpRequestMessage req)
             {
                 HttpResponseMessage response = await HttpClient.SendAsync(req);
                 return response;
