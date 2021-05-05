@@ -59,6 +59,17 @@
                 "description": "Mandatory storage account connection string for nsg flow log data."
             }
         },
+        "outputBinding": {
+            "type": "string",
+            "allowedValues": [
+                "xdr",
+                "eventhub"
+            ],
+            "defaultValue": "xdr",
+            "metadata": {
+                "description": "Select the desired destination for your logs (XDR or Event Hubs)."
+            }
+        },
         "xdrHost": {
             "type": "string",
             "defaultValue": "",
@@ -165,6 +176,10 @@
                         {
                             "name": "nsgSourceDataConnection",
                             "value": "[parameters('nsgSourceDataConnection')]"
+                        },
+                        {
+                            "name": "outputBinding",
+                            "value": "[parameters('outputBinding')]"
                         },
                         {
                             "name": "xdrHost",
