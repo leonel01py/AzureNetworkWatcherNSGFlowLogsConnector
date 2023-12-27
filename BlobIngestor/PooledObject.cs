@@ -41,7 +41,8 @@ namespace Microsoft.CodeAnalysis
             return new PooledObject<StringBuilder>(
                 pool,
                 p => Allocator(p),
-                (p, sb) => Releaser(p, sb));
+                (p, sb) => Releaser(p, sb)
+                );
         }
 
         public static PooledObject<Stopwatch> Create(ObjectPool<Stopwatch> pool)

@@ -1,3 +1,4 @@
+using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
@@ -6,13 +7,12 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Formatting;
 
-namespace nsgFunc
+namespace Cortex
 {
     public partial class Util
     {
-        public static async Task<int> obXDR(string newClientContent, ILogger log)
+        public static async Task<int> ObXDR(string newClientContent, ILogger log)
         {
             //
             // newClientContent looks like this:
@@ -26,8 +26,8 @@ namespace nsgFunc
             // }
             //
 
-            string xdrHost = Util.GetEnvironmentVariable("xdrHost");
-            string xdrToken = Util.GetEnvironmentVariable("xdrToken");
+            string xdrHost = GetEnvironmentVariable("XDR_HOST");
+            string xdrToken = GetEnvironmentVariable("XDR_TOKEN");
 
             if (xdrHost.Length == 0 || xdrToken.Length == 0)
             {
@@ -41,29 +41,30 @@ namespace nsgFunc
 
             int bytesSent = 0;
 
-            foreach (var transmission in convertToXDRList(newClientContent, log))
+            foreach (var transmission in ConvertToXDRList(newClientContent, log))
             {
                 var client = new SingleHttpClientInstance();
                 try
                 {
-                    HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Post, xdrHost);
+                    var req = new HttpRequestMessage(HttpMethod.Post, xdrHost);
                     req.Headers.Accept.Clear();
                     req.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                     req.Headers.Add("Authorization", $"Bearer {xdrToken}");
                     req.Content = new StringContent(transmission, Encoding.UTF8, "application/json");
-                    HttpResponseMessage response = await SingleHttpClientInstance.SendToXDR(req);
+
+                    var response = await SingleHttpClientInstance.SendToXDR(req);
                     if (response.StatusCode != HttpStatusCode.OK)
                     {
-                        throw new System.Net.Http.HttpRequestException($"Non HTTP 200 status code received from XDR: {response.StatusCode}, and reason: {response.ReasonPhrase}");
+                        throw new HttpRequestException($"Non HTTP 200 status code received from XDR: {response.StatusCode}, reason: {response.ReasonPhrase}");
                     }
                 }
-                catch (System.Net.Http.HttpRequestException e)
+                catch (HttpRequestException e)
                 {
-                    throw new System.Net.Http.HttpRequestException("Failed sending data to XDR", e);
+                    throw new HttpRequestException("Failed sending data to XDR", e);
                 }
                 catch (Exception f)
                 {
-                    throw new System.Exception("Failed sending data to XDR.", f);
+                    throw new Exception("Failed sending data to XDR.", f);
                 }
                 bytesSent += transmission.Length;
             }
@@ -71,9 +72,9 @@ namespace nsgFunc
             return bytesSent;
         }
 
-        static System.Collections.Generic.IEnumerable<string> convertToXDRList(string newClientContent, ILogger log)
+        static System.Collections.Generic.IEnumerable<string> ConvertToXDRList(string newClientContent, ILogger log)
         {
-            foreach (var messageList in denormalizedRecords(newClientContent, null, log))
+            foreach (var messageList in DenormalizedRecords(newClientContent))
             {
 
                 StringBuilder outgoingJson = StringBuilderPool.Allocate();

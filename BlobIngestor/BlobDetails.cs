@@ -1,23 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace nsgFunc
+﻿namespace Cortex
 {
     public class BlobDetails
     {
-        //const string macPath = "hybridflowlogtest-networksecuritygroupflowevent/resourceId=   0, 1
-        //SUBSCRIPTIONS/{subId} 2, 3
-        //RESOURCEGROUPS/{resourceGroup} 4, 5
-        //PROVIDERS/MICROSOFT.NETWORK 6, 7
-        //NETWORKSECURITYGROUPS/{nsgName}  8, 9
-        //y={blobYear}  10
-        //m={blobMonth} 11
-        //d={blobDay} 12
-        //h={blobHour} 13
-        //m={blobMinute} 14
-        //macAddress={mac} 15
-        //PT1H.json";
         public string SubscriptionId { get; set; }
         public string ResourceGroupName { get; set; }
         public string NsgName { get; set; }

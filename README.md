@@ -1,16 +1,8 @@
 This project installs into an Azure Function in your Azure subscription. Its job is to read NSG Flow Logs from your configured storage account, break the data into chunks that are the right size for your log analytics system to ingest, then transmit the chunks to that system. At present, you may choose from two output bindings: XDR, Event Hub.  
 
 
-[![Deploy to Azure](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FPaloAltoNetworks%2FAzureNetworkWatcherNSGFlowLogsConnector%2Fmaster%2FNwNsgProject%2Fdeploy.json)
+[![Deploy to Azure](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FPaloAltoNetworks%2FAzureNetworkWatcherNSGFlowLogsConnector%2Fnew_version%2FNwNsgProject%2Fdeploy.json)
 
-
-NOTE regarding the Event Hub output binding:  
-
-Native support for event hubs is not yet available, but would be the preferred method. If you use prefer to send NSG flow logs to XDR using event hub rather than XDR HTTP Collector, the event hub output binding will do the job. In [Azure Monitor Addon For Splunk](https://github.com/Microsoft/AzureMonitorAddonForSplunk), configure the Azure Monitor Diagnostic Logs data input and add a line to ```TA-folder/bin/app/hubs.json``` similar to this:  
-
-Example: ```'insights-logs-nsgflowlogs': 'resourceId'```  
-
-When you create the hub (e.g. ```insights-logs-nsgflowlogs```) set the number of partitions to 4. This is mandatory.
 
 # Settings
 
