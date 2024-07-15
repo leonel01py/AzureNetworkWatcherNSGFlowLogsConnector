@@ -28,11 +28,11 @@
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </None>
   </ItemGroup>
-  <PropertyGroup>
+ <!--  <PropertyGroup>
     <!-- AGREGO ESTA LINEA -->
     <RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
     <PublishReadyToRun>true</PublishReadyToRun>
-  </PropertyGroup>
+  </PropertyGroup> -->
   <ItemGroup>
     <Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext" />
   </ItemGroup>
